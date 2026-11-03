@@ -1,0 +1,95 @@
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<title>QR Bolha de Preferência</title>
+<style>
+  :root{
+    color-scheme: light;
+    --bg:#f8f6fb; --surface:#ffffff; --surface-2:#efe9f7;
+    --text-primary:#1c1430; --text-secondary:#564c73; --text-muted:#8d84a3;
+    --border:rgba(28,20,48,0.12); --accent:#7c3aed; --accent-2:#ec4899; --shadow:rgba(28,20,48,0.18);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      color-scheme: dark;
+      --bg:#120c1d; --surface:#1c1430; --surface-2:#241a3a;
+      --text-primary:#ffffff; --text-secondary:#c9c0df; --text-muted:#948ba9;
+      --border:rgba(255,255,255,0.14); --accent:#a78bfa; --accent-2:#f472b6; --shadow:rgba(0,0,0,0.6);
+    }
+  }
+  :root[data-theme="dark"]{
+    color-scheme: dark;
+    --bg:#120c1d; --surface:#1c1430; --surface-2:#241a3a;
+    --text-primary:#ffffff; --text-secondary:#c9c0df; --text-muted:#948ba9;
+    --border:rgba(255,255,255,0.14); --accent:#a78bfa; --accent-2:#f472b6; --shadow:rgba(0,0,0,0.6);
+  }
+
+  *{ box-sizing:border-box; }
+  body{
+    margin:0; min-height:100vh; background:var(--bg); color:var(--text-primary);
+    font-family:'Inter', system-ui, -apple-system, "Segoe UI", sans-serif;
+    display:flex; align-items:center; justify-content:center;
+    padding:32px 20px;
+  }
+  .card{
+    width:100%; max-width:420px; text-align:center;
+    display:flex; flex-direction:column; align-items:center; gap:18px;
+  }
+  .eyebrow{
+    display:inline-flex; align-items:center; gap:6px; font-size:13px; font-weight:700;
+    letter-spacing:.04em; text-transform:uppercase; color:var(--accent);
+  }
+  h1{
+    font-family:'Baloo 2', 'Inter', sans-serif; font-size:26px; line-height:1.2; margin:0;
+    color:var(--text-primary); text-wrap:balance;
+  }
+  .sub{ margin:0; font-size:14.5px; color:var(--text-secondary); line-height:1.5; max-width:340px; }
+
+  .qr-tile{
+    background:#ffffff; border-radius:20px; padding:20px;
+    box-shadow:0 14px 34px var(--shadow); border:1px solid var(--border);
+  }
+  .qr-tile :where(img,canvas,table){ display:block; width:220px; height:220px; }
+
+  .url-box{
+    width:100%; background:var(--surface); border:1px solid var(--border); border-radius:12px;
+    padding:12px 14px; font-size:12.5px; color:var(--text-secondary); word-break:break-all;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  a.open-link{
+    display:inline-flex; align-items:center; gap:6px; color:var(--accent); font-weight:700;
+    font-size:14px; text-decoration:none; padding:10px 20px; border-radius:999px;
+    border:1px solid var(--border);
+  }
+  a.open-link:hover{ border-color:var(--accent); }
+  footer{ font-size:11.5px; color:var(--text-muted); margin-top:4px; }
+</style>
+
+<div class="card">
+  <span class="eyebrow">🫧 Bolha de Preferência</span>
+  <h1>Aponte a câmera para começar o quiz</h1>
+  <p class="sub">Escaneie o QR Code com a câmera do celular — abre direto no navegador, sem precisar instalar nada.</p>
+
+  <div class="qr-tile" id="qr"></div>
+
+  <div class="url-box" id="url-text"></div>
+  <a class="open-link" id="open-link" href="#" target="_blank" rel="noopener">Abrir o link →</a>
+
+  <footer>Gerado para apresentação — experimento sobre algoritmos de recomendação.</footer>
+</div>
+
+<script>
+  var TARGET_URL = "https://claude.ai/artifact/GEf7uYMU3p1SF7yHFwUE6Z";
+
+  document.getElementById('url-text').textContent = TARGET_URL;
+  document.getElementById('open-link').href = TARGET_URL;
+
+  new QRCode(document.getElementById('qr'), {
+    text: TARGET_URL,
+    width: 220,
+    height: 220,
+    colorDark: '#1c1430',
+    colorLight: '#ffffff',
+    correctLevel: QRCode.CorrectLevel.M
+  });
+</script>
