@@ -1,0 +1,528 @@
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap">
+<title>Bolha de Preferência</title>
+<style>
+  :root{
+    color-scheme: light;
+    --bg:#f8f6fb; --surface:#ffffff; --surface-2:#efe9f7; --surface-3:#e4dcf2;
+    --text-primary:#1c1430; --text-secondary:#564c73; --text-muted:#8d84a3;
+    --border:rgba(28,20,48,0.12); --border-strong:rgba(28,20,48,0.22);
+    --accent:#7c3aed; --accent-2:#ec4899; --shadow:rgba(28,20,48,0.16);
+    --series-blue:#2a78d6; --grid:#e1e0d9;
+    --tag-doce:#a97400; --tag-frio:#2a78d6; --tag-gourmet:#4a3aa7; --tag-indulgente:#c23c74;
+    --tag-pratico:#008300; --tag-quente:#eb6834; --tag-salgado:#e34948; --tag-saudavel:#0f8f60;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      color-scheme: dark;
+      --bg:#120c1d; --surface:#1c1430; --surface-2:#241a3a; --surface-3:#2d2147;
+      --text-primary:#ffffff; --text-secondary:#c9c0df; --text-muted:#948ba9;
+      --border:rgba(255,255,255,0.12); --border-strong:rgba(255,255,255,0.22);
+      --accent:#a78bfa; --accent-2:#f472b6; --shadow:rgba(0,0,0,0.55);
+      --series-blue:#3987e5; --grid:#2c2c2a;
+      --tag-doce:#c98500; --tag-frio:#3987e5; --tag-gourmet:#9085e9; --tag-indulgente:#d55181;
+      --tag-pratico:#008300; --tag-quente:#d95926; --tag-salgado:#e66767; --tag-saudavel:#199e70;
+    }
+  }
+  :root[data-theme="dark"]{
+    color-scheme: dark;
+    --bg:#120c1d; --surface:#1c1430; --surface-2:#241a3a; --surface-3:#2d2147;
+    --text-primary:#ffffff; --text-secondary:#c9c0df; --text-muted:#948ba9;
+    --border:rgba(255,255,255,0.12); --border-strong:rgba(255,255,255,0.22);
+    --accent:#a78bfa; --accent-2:#f472b6; --shadow:rgba(0,0,0,0.55);
+    --series-blue:#3987e5; --grid:#2c2c2a;
+    --tag-doce:#c98500; --tag-frio:#3987e5; --tag-gourmet:#9085e9; --tag-indulgente:#d55181;
+    --tag-pratico:#008300; --tag-quente:#d95926; --tag-salgado:#e66767; --tag-saudavel:#199e70;
+  }
+
+  *{ box-sizing:border-box; }
+  body{
+    margin:0; background:var(--bg); color:var(--text-primary);
+    font-family:'Inter', system-ui, -apple-system, "Segoe UI", sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,.display{ font-family:'Baloo 2', 'Inter', sans-serif; text-wrap:balance; }
+  button{ font-family:inherit; }
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration:0.001ms !important; transition-duration:0.001ms !important; }
+  }
+
+  .wrap{ max-width:480px; margin:0 auto; padding:20px 20px 48px; min-height:100vh; position:relative; }
+
+  /* ambient bubbles */
+  .ambient{ position:fixed; inset:0; overflow:hidden; z-index:0; pointer-events:none; }
+  .ambient span{
+    position:absolute; border-radius:50%;
+    background:radial-gradient(circle at 30% 30%, color-mix(in srgb, var(--accent) 35%, transparent), transparent 70%);
+    opacity:.5; animation:float 16s ease-in-out infinite;
+  }
+  .ambient span:nth-child(1){ width:220px; height:220px; left:-60px; top:10%; animation-delay:0s; }
+  .ambient span:nth-child(2){ width:160px; height:160px; right:-50px; top:55%; animation-delay:-5s; background:radial-gradient(circle at 30% 30%, color-mix(in srgb, var(--accent-2) 35%, transparent), transparent 70%); }
+  .ambient span:nth-child(3){ width:130px; height:130px; left:20%; bottom:-40px; animation-delay:-9s; }
+  @keyframes float{ 0%,100%{ transform:translateY(0) scale(1); } 50%{ transform:translateY(-24px) scale(1.06); } }
+
+  .app{ position:relative; z-index:1; }
+
+  /* top meter */
+  .meter-bar{
+    background:var(--surface); border:1px solid var(--border); border-radius:16px;
+    padding:14px 16px; box-shadow:0 4px 18px var(--shadow); margin-bottom:22px;
+  }
+  .meter-top{ display:flex; justify-content:space-between; align-items:baseline; gap:10px; margin-bottom:8px; }
+  .meter-label{ font-size:12.5px; font-weight:600; color:var(--text-secondary); text-transform:uppercase; letter-spacing:.04em; }
+  .meter-value{ font-family:'Baloo 2',sans-serif; font-size:20px; font-weight:700; color:var(--accent); font-variant-numeric:tabular-nums; }
+  .meter-track{ height:10px; border-radius:999px; background:var(--surface-2); overflow:hidden; }
+  .meter-fill{ height:100%; border-radius:999px; background:linear-gradient(90deg,var(--accent),var(--accent-2)); transition:width .6s cubic-bezier(.3,.8,.3,1); }
+  .meter-caption{ margin:8px 0 0; font-size:12.5px; color:var(--text-muted); }
+  .round-pips{ display:flex; gap:6px; margin-top:10px; }
+  .round-pips span{ flex:1; height:4px; border-radius:999px; background:var(--surface-2); }
+  .round-pips span.done{ background:var(--accent); }
+  .round-pips span.active{ background:var(--accent-2); }
+
+  /* intro */
+  .intro-hero{ text-align:center; padding:28px 6px 8px; }
+  .intro-hero .orb{
+    width:92px; height:92px; margin:0 auto 18px; border-radius:50%;
+    background:linear-gradient(135deg,var(--accent),var(--accent-2));
+    display:flex; align-items:center; justify-content:center; font-size:42px;
+    box-shadow:0 10px 30px var(--shadow);
+  }
+  .intro-hero h1{ font-size:30px; line-height:1.15; margin:0 0 10px; color:var(--text-primary); }
+  .intro-hero p{ color:var(--text-secondary); font-size:15px; line-height:1.55; margin:0 auto 22px; max-width:360px; }
+  .cta{
+    display:inline-flex; align-items:center; gap:8px; border:none; cursor:pointer;
+    background:linear-gradient(135deg,var(--accent),var(--accent-2)); color:#fff;
+    font-weight:700; font-size:16px; padding:14px 28px; border-radius:999px;
+    box-shadow:0 10px 24px var(--shadow); transition:transform .15s ease;
+  }
+  .cta:active{ transform:scale(.96); }
+  .ghost-btn{
+    display:inline-flex; align-items:center; gap:6px; background:transparent; border:1px solid var(--border-strong);
+    color:var(--text-secondary); font-weight:600; font-size:14px; padding:10px 18px; border-radius:999px; cursor:pointer;
+  }
+  .intro-axes{ display:flex; flex-wrap:wrap; gap:7px; justify-content:center; margin-top:18px; }
+
+  /* quiz */
+  .round-title{ margin:4px 0 16px; }
+  .round-title .eyebrow{ display:block; font-size:12.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--accent); margin-bottom:4px; }
+  .round-title h2{ font-size:22px; margin:0; color:var(--text-primary); }
+
+  .options{ display:flex; flex-direction:column; gap:14px; }
+  .card{
+    display:flex; align-items:center; gap:14px; text-align:left; width:100%;
+    background:var(--surface); border:1px solid var(--border); border-radius:18px;
+    padding:16px; cursor:pointer; box-shadow:0 2px 10px var(--shadow);
+    transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    animation:cardIn .4s ease backwards;
+  }
+  .card:hover{ border-color:var(--border-strong); transform:translateY(-2px); }
+  .card:active{ transform:scale(.97); }
+  .card.picked{ transform:scale(1.04); border-color:var(--accent); box-shadow:0 0 0 3px color-mix(in srgb, var(--accent) 35%, transparent); }
+  .card.fading{ opacity:0; transform:scale(.9); transition:opacity .35s ease, transform .35s ease; }
+  @keyframes cardIn{ from{ opacity:0; transform:translateY(14px); } to{ opacity:1; transform:translateY(0); } }
+  .card .emoji{ font-size:38px; width:54px; text-align:center; flex:none; }
+  .card .info{ flex:1; min-width:0; }
+  .card .info h3{ margin:0 0 6px; font-size:16.5px; color:var(--text-primary); }
+  .tags{ display:flex; flex-wrap:wrap; gap:5px; }
+  .tag{ font-size:11px; font-weight:600; padding:3px 8px; border-radius:999px; white-space:nowrap; }
+  .tag-doce{ color:var(--tag-doce); background:color-mix(in srgb, var(--tag-doce) 16%, transparent); }
+  .tag-frio{ color:var(--tag-frio); background:color-mix(in srgb, var(--tag-frio) 16%, transparent); }
+  .tag-gourmet{ color:var(--tag-gourmet); background:color-mix(in srgb, var(--tag-gourmet) 16%, transparent); }
+  .tag-indulgente{ color:var(--tag-indulgente); background:color-mix(in srgb, var(--tag-indulgente) 16%, transparent); }
+  .tag-pratico{ color:var(--tag-pratico); background:color-mix(in srgb, var(--tag-pratico) 16%, transparent); }
+  .tag-quente{ color:var(--tag-quente); background:color-mix(in srgb, var(--tag-quente) 16%, transparent); }
+  .tag-salgado{ color:var(--tag-salgado); background:color-mix(in srgb, var(--tag-salgado) 16%, transparent); }
+  .tag-saudavel{ color:var(--tag-saudavel); background:color-mix(in srgb, var(--tag-saudavel) 16%, transparent); }
+
+  /* results */
+  .result-hero{ text-align:center; padding:8px 4px 4px; }
+  .result-hero .kicker{ font-size:13px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--text-muted); }
+  .result-hero h1{ font-size:27px; margin:8px 0 6px; color:var(--text-primary); }
+  .result-hero p{ color:var(--text-secondary); font-size:14.5px; margin:0 0 6px; }
+
+  .section{ margin-top:28px; }
+  .section h2{ font-size:17px; margin:0 0 4px; }
+  .section .sub{ color:var(--text-muted); font-size:13px; margin:0 0 14px; }
+  .panel{ background:var(--surface); border:1px solid var(--border); border-radius:18px; padding:18px; box-shadow:0 2px 10px var(--shadow); }
+
+  .venn-wrap{ display:flex; justify-content:center; }
+  .venn-wrap svg{ width:100%; max-width:360px; height:auto; }
+  .venn-legend{ display:flex; justify-content:center; gap:14px; flex-wrap:wrap; margin-top:10px; }
+  .venn-legend .item{ display:flex; align-items:center; gap:6px; font-size:12.5px; color:var(--text-secondary); font-weight:600; }
+  .venn-legend .dot{ width:10px; height:10px; border-radius:50%; flex:none; }
+
+  .timeline-caption{ display:flex; justify-content:space-between; font-size:12px; color:var(--text-muted); margin-top:6px; }
+
+  .edu-list{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:12px; }
+  .edu-list li{ display:flex; gap:12px; align-items:flex-start; }
+  .edu-list .ico{ flex:none; width:34px; height:34px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:17px; background:var(--surface-2); }
+  .edu-list .txt{ font-size:13.5px; color:var(--text-secondary); line-height:1.5; }
+  .edu-list .txt b{ color:var(--text-primary); }
+  .callout{
+    margin-top:14px; padding:14px 16px; border-radius:14px; font-size:13.5px; line-height:1.55;
+    background:color-mix(in srgb, var(--accent) 12%, var(--surface-2)); color:var(--text-primary); border:1px solid color-mix(in srgb, var(--accent) 30%, var(--border));
+  }
+
+  .profile-bars{ display:flex; flex-direction:column; gap:10px; margin-top:4px; }
+  .profile-row{ display:grid; grid-template-columns:84px 1fr 38px; align-items:center; gap:10px; }
+  .profile-row .lbl{ font-size:12.5px; font-weight:600; color:var(--text-secondary); }
+  .profile-row .track{ height:8px; border-radius:999px; background:var(--surface-2); overflow:hidden; }
+  .profile-row .fill{ height:100%; border-radius:999px; }
+  .profile-row .pct{ font-size:12px; color:var(--text-muted); text-align:right; font-variant-numeric:tabular-nums; }
+
+  .restart-row{ display:flex; justify-content:center; margin-top:30px; }
+  footer.note{ text-align:center; color:var(--text-muted); font-size:11.5px; margin-top:26px; }
+</style>
+
+<div class="ambient"><span></span><span></span><span></span></div>
+<div class="wrap"><div id="app" class="app"></div></div>
+
+<script>
+(function(){
+  "use strict";
+
+  var AXES = ['doce','salgado','saudavel','indulgente','pratico','gourmet','quente','frio'];
+
+  var AXIS_META = {
+    doce:       { label:'Doce',       emoji:'🍬', cls:'tag-doce' },
+    salgado:    { label:'Salgado',    emoji:'🧂', cls:'tag-salgado' },
+    saudavel:   { label:'Saudável',   emoji:'🥦', cls:'tag-saudavel' },
+    indulgente: { label:'Indulgente', emoji:'🍫', cls:'tag-indulgente' },
+    pratico:    { label:'Prático',    emoji:'⚡', cls:'tag-pratico' },
+    gourmet:    { label:'Gourmet',    emoji:'✨', cls:'tag-gourmet' },
+    quente:     { label:'Quente',     emoji:'🔥', cls:'tag-quente' },
+    frio:       { label:'Frio',       emoji:'❄️', cls:'tag-frio' }
+  };
+
+  // id, nome, emoji, vetor [doce,salgado,saudavel,indulgente,pratico,gourmet,quente,frio]
+  var RAW_FOODS = [
+    [1,  'Açaí com Leite Ninho',            '🍧', .90,.05,.30,.85,.60,.30,.00,.90],
+    [2,  'Salada Caesar',                   '🥗', .10,.40,.85,.20,.60,.50,.10,.50],
+    [3,  'Hambúrguer Artesanal',            '🍔', .10,.80,.25,.75,.40,.70,.90,.05],
+    [4,  'Brigadeiro Gourmet',              '🍫', .95,.15,.10,.90,.70,.60,.10,.10],
+    [5,  'Petit Gâteau com Sorvete',        '🍰', .90,.05,.05,.95,.20,.85,.70,.50],
+    [6,  'Milk-shake Duplo Chocolate',      '🥤', .85,.10,.10,.85,.80,.30,.00,.90],
+    [7,  'Torta de Limão',                  '🥧', .75,.10,.20,.70,.50,.60,.10,.60],
+    [8,  'Donuts Recheados',                '🍩', .85,.10,.10,.80,.90,.20,.10,.10],
+    [9,  'Sorvete Artesanal de Pistache',   '🍦', .70,.05,.25,.65,.60,.70,.00,.95],
+    [10, 'Bowl de Quinoa com Frango',       '🥙', .05,.40,.90,.15,.50,.55,.40,.10],
+    [11, 'Wrap Integral de Frango',         '🌯', .05,.45,.80,.20,.85,.30,.30,.10],
+    [12, 'Poke de Salmão',                  '🍣', .10,.45,.80,.25,.50,.75,.00,.70],
+    [13, 'Smoothie Verde Detox',            '🥤', .20,.05,.95,.10,.80,.30,.00,.60],
+    [14, 'Omelete de Claras com Espinafre', '🍳', .00,.40,.90,.10,.60,.30,.70,.00],
+    [15, 'Salada de Grão-de-bico',          '🫘', .05,.35,.90,.10,.65,.35,.10,.30],
+    [16, 'Pizza Pepperoni',                 '🍕', .10,.85,.20,.80,.50,.40,.80,.00],
+    [17, 'Batata Frita com Cheddar e Bacon','🍟', .05,.90,.10,.90,.70,.20,.85,.00],
+    [18, 'Hot Dog Completo',                '🌭', .15,.85,.15,.80,.80,.10,.75,.00],
+    [19, 'Nuggets de Frango',               '🍗', .05,.75,.20,.70,.90,.10,.70,.00],
+    [20, 'X-Tudo Duplo Bacon',              '🍔', .10,.90,.10,.95,.30,.30,.85,.00],
+    [21, 'Coxinha de Frango',               '🧆', .05,.80,.15,.75,.85,.15,.60,.00],
+    [22, 'Risoto de Funghi Trufado',        '🍄', .05,.50,.40,.60,.20,.95,.60,.00],
+    [23, 'Filé ao Poivre com Fritas',       '🥩', .05,.70,.20,.75,.30,.90,.80,.00],
+    [24, 'Sushi Combinado',                 '🍣', .15,.50,.70,.30,.40,.80,.00,.80]
+  ];
+
+  var FOODS = RAW_FOODS.map(function(r){
+    var v = {}; AXES.forEach(function(a,i){ v[a] = r[3+i]; });
+    return { id:r[0], nome:r[1], emoji:r[2], v:v };
+  });
+  function foodById(id){ return FOODS.filter(function(f){ return f.id===id; })[0]; }
+
+  var ROUND1_IDS = [1,2,3];
+
+  var NAME_MAP = {
+    'doce_indulgente':      ['Bolha do Comfort Food Açucarado','🎂'],
+    'doce_frio':            ['Bolha do Sorvete Eterno','🍨'],
+    'frio_indulgente':      ['Câmara do Doce Gelado','❄️'],
+    'doce_gourmet':         ['Bolha da Confeitaria Chique','👑'],
+    'pratico_saudavel':     ['Bolha Fit da Correria','⚡'],
+    'gourmet_saudavel':     ['Bolha do Poke Sofisticado','🍣'],
+    'frio_saudavel':        ['Câmara da Vida Fitness & Leve','🥬'],
+    'quente_salgado':       ['Bolha do Comfort Food Noturno','🌙'],
+    'indulgente_salgado':   ['Bolha Fast Food Sem Culpa','🍕'],
+    'pratico_salgado':      ['Bolha Formiga Formidável','🐜'],
+    'gourmet_quente':       ['Bolha do Chef Instagramável','📸'],
+    'gourmet_salgado':      ['Bolha do Paladar Refinado','🍷'],
+    'gourmet_indulgente':   ['Bolha da Alta Gastronomia Indulgente','🥂'],
+    'pratico_quente':       ['Bolha do Delivery Express','🛵']
+  };
+
+  function canon(a,b){ return [a,b].sort().join('_'); }
+
+  function clamp(n,a,b){ return Math.max(a, Math.min(b, n)); }
+
+  function cosine(va, vb){
+    var dot=0, ma=0, mb=0;
+    AXES.forEach(function(a){ dot += va[a]*vb[a]; ma += va[a]*va[a]; mb += vb[a]*vb[a]; });
+    if (ma===0 || mb===0) return 0;
+    return dot / (Math.sqrt(ma)*Math.sqrt(mb));
+  }
+
+  function avgPairwiseDiversity(ids){
+    var items = ids.map(foodById), total=0, count=0;
+    for (var i=0;i<items.length;i++){
+      for (var j=i+1;j<items.length;j++){
+        total += 1 - cosine(items[i].v, items[j].v);
+        count++;
+      }
+    }
+    return count ? total/count : 0;
+  }
+
+  var TOTAL_ROUNDS = 5;
+
+  function freshState(){
+    var acc = {}; AXES.forEach(function(a){ acc[a]=0; });
+    return { round:0, acc:acc, weightSum:0, shownIds:[], history:[], choices:[], baseline:null };
+  }
+  var state = freshState();
+
+  function pickOptions(round){
+    if (round===1) return ROUND1_IDS.slice();
+    var remaining = FOODS.filter(function(f){ return state.shownIds.indexOf(f.id)===-1; });
+    var ranked = remaining.map(function(f){ return { f:f, sim:cosine(state.acc, f.v) }; });
+    ranked.sort(function(a,b){ return b.sim - a.sim; });
+    return ranked.slice(0,3).map(function(r){ return r.f.id; });
+  }
+
+  function startRound(n){
+    state.round = n;
+    var ids = pickOptions(n);
+    ids.forEach(function(id){ state.shownIds.push(id); });
+    var raw = avgPairwiseDiversity(ids);
+    if (n===1) state.baseline = raw || 0.0001;
+    var diversityPct = clamp(Math.round((raw/state.baseline)*100), 5, 100);
+    state.history.push({ round:n, ids:ids, diversityPct:diversityPct });
+    renderQuiz(ids, diversityPct, n);
+  }
+
+  function choose(foodId){
+    var round = state.round;
+    var food = foodById(foodId);
+    var weight = round;
+    AXES.forEach(function(a){ state.acc[a] += food.v[a]*weight; });
+    state.weightSum += weight;
+    state.choices.push(food);
+    saveSnapshot();
+    if (round < TOTAL_ROUNDS){ startRound(round+1); }
+    else { renderResults(); }
+  }
+
+  function topAxes(n){
+    return AXES.slice().sort(function(a,b){ return state.acc[b]-state.acc[a]; }).slice(0,n);
+  }
+
+  function axisPct(a){ return state.weightSum ? clamp(Math.round(state.acc[a]/state.weightSum*100),0,100) : 0; }
+
+  function bubbleName(){
+    var t = topAxes(3);
+    var key1 = canon(t[0],t[1]);
+    if (NAME_MAP[key1]) return NAME_MAP[key1];
+    var key2 = canon(t[0],t[2]);
+    if (NAME_MAP[key2]) return NAME_MAP[key2];
+    return ['Bolha do(a) ' + AXIS_META[t[0]].label + ' ' + AXIS_META[t[1]].label, AXIS_META[t[0]].emoji];
+  }
+
+  /* ---------- render helpers ---------- */
+
+  function el(html){ var d=document.createElement('div'); d.innerHTML=html; return d.firstElementChild; }
+
+  function captionFor(funnelPct){
+    if (funnelPct < 15) return 'Ainda vendo um pouco de tudo — o algoritmo está só começando a te conhecer.';
+    if (funnelPct < 45) return 'As opções já começam a convergir para o que você escolheu antes.';
+    if (funnelPct < 75) return 'O funil está fechando: cada clique elimina mundos inteiros de opções.';
+    return 'Bolha quase fechada: as opções agora são variações do mesmo nicho.';
+  }
+
+  function tagsHtml(food){
+    var ranked = AXES.slice().sort(function(a,b){ return food.v[b]-food.v[a]; }).slice(0,2);
+    return ranked.map(function(a){
+      return '<span class="tag ' + AXIS_META[a].cls + '">' + AXIS_META[a].emoji + ' ' + AXIS_META[a].label + '</span>';
+    }).join('');
+  }
+
+  function renderIntro(){
+    var app = document.getElementById('app');
+    app.innerHTML =
+      '<div class="intro-hero">' +
+        '<div class="orb">🫧</div>' +
+        '<h1>Qual é a sua<br>Bolha de Preferência?</h1>' +
+        '<p>Escolha entre comidas por 5 rodadas. A cada clique, o algoritmo aprende sobre você e as opções ficam cada vez mais parecidas — exatamente como no feed do seu app favorito.</p>' +
+        '<button class="cta" onclick="App.start()">Começar o teste →</button>' +
+        '<div class="intro-axes">' +
+          AXES.map(function(a){ return '<span class="tag ' + AXIS_META[a].cls + '">' + AXIS_META[a].emoji + ' ' + AXIS_META[a].label + '</span>'; }).join('') +
+        '</div>' +
+      '</div>';
+  }
+
+  function renderQuiz(ids, diversityPct, round){
+    var funnelPct = 100 - diversityPct;
+    var app = document.getElementById('app');
+    var pips = '';
+    for (var i=1;i<=TOTAL_ROUNDS;i++){
+      pips += '<span class="' + (i<round?'done':(i===round?'active':'')) + '"></span>';
+    }
+    app.innerHTML =
+      '<div class="meter-bar">' +
+        '<div class="meter-top"><span class="meter-label">Afunilamento do algoritmo</span><span class="meter-value">' + funnelPct + '%</span></div>' +
+        '<div class="meter-track"><div class="meter-fill" style="width:' + funnelPct + '%"></div></div>' +
+        '<p class="meter-caption">' + captionFor(funnelPct) + '</p>' +
+        '<div class="round-pips">' + pips + '</div>' +
+      '</div>' +
+      '<div class="round-title"><span class="eyebrow">Rodada ' + round + ' de ' + TOTAL_ROUNDS + '</span><h2>O que você escolhe agora?</h2></div>' +
+      '<div class="options" id="options"></div>';
+
+    var optionsEl = document.getElementById('options');
+    ids.forEach(function(id, idx){
+      var food = foodById(id);
+      var card = el(
+        '<button class="card" style="animation-delay:' + (idx*70) + 'ms" data-id="' + id + '">' +
+          '<div class="emoji">' + food.emoji + '</div>' +
+          '<div class="info"><h3>' + food.nome + '</h3><div class="tags">' + tagsHtml(food) + '</div></div>' +
+        '</button>'
+      );
+      card.addEventListener('click', function(){ onPick(this, id); });
+      optionsEl.appendChild(card);
+    });
+  }
+
+  function onPick(cardEl, id){
+    var siblings = cardEl.parentNode.querySelectorAll('.card');
+    siblings.forEach(function(c){ c.disabled = true; });
+    cardEl.classList.add('picked');
+    setTimeout(function(){
+      siblings.forEach(function(c){ if (c!==cardEl) c.classList.add('fading'); });
+    }, 160);
+    setTimeout(function(){ choose(id); }, 520);
+  }
+
+  function renderResults(){
+    var app = document.getElementById('app');
+    var nameInfo = bubbleName();
+    var t3 = topAxes(3);
+    var history = state.history;
+
+    app.innerHTML =
+      '<div class="result-hero">' +
+        '<span class="kicker">Sua bolha de preferência</span>' +
+        '<h1>' + nameInfo[1] + ' ' + nameInfo[0] + '</h1>' +
+        '<p>Depois de 5 escolhas, o algoritmo te enquadrou neste perfil. Veja como ele chegou lá.</p>' +
+      '</div>' +
+
+      '<div class="section">' +
+        '<h2>Seu perfil em 3 eixos</h2>' +
+        '<p class="sub">Interseção dos atributos que mais definiram suas escolhas</p>' +
+        '<div class="panel">' +
+          '<div class="venn-wrap">' + vennSvg(t3) + '</div>' +
+          '<div class="venn-legend">' + t3.map(function(a){
+            return '<span class="item"><span class="dot" style="background:var(--tag-' + a + ')"></span>' + AXIS_META[a].emoji + ' ' + AXIS_META[a].label + '</span>';
+          }).join('') + '</div>' +
+          '<div class="profile-bars">' + AXES.slice().sort(function(a,b){return state.acc[b]-state.acc[a];}).map(function(a){
+            var pct = axisPct(a);
+            return '<div class="profile-row"><span class="lbl">' + AXIS_META[a].emoji + ' ' + AXIS_META[a].label + '</span>' +
+              '<div class="track"><div class="fill" style="width:' + pct + '%;background:var(--tag-' + a + ')"></div></div>' +
+              '<span class="pct">' + pct + '%</span></div>';
+          }).join('') + '</div>' +
+        '</div>' +
+      '</div>' +
+
+      '<div class="section">' +
+        '<h2>Como a sua bolha foi criada?</h2>' +
+        '<p class="sub">Diversidade das opções mostradas em cada rodada</p>' +
+        '<div class="panel">' +
+          diversitySvg(history) +
+          '<div class="callout">📊 <b>Assim como no Instagram, TikTok, YouTube ou iFood</b>, cada clique ensina o algoritmo um pouco mais sobre você — e ele retribui mostrando cada vez menos diversidade e cada vez mais do mesmo nicho. Isso é ótimo para engajamento, mas é assim que nascem as <b>câmaras de eco</b>.</p>' +
+        '</div>' +
+      '</div>' +
+
+      '<div class="section">' +
+        '<h2>Por que isso importa</h2>' +
+        '<div class="panel">' +
+          '<ul class="edu-list">' +
+            '<li><span class="ico">🎯</span><span class="txt"><b>Personalização</b> é feita por similaridade: o sistema compara seu histórico com cada item do catálogo e prioriza o que está mais "perto" matematicamente.</span></li>' +
+            '<li><span class="ico">🔁</span><span class="txt"><b>Cada clique é um voto</b>: ele realimenta o modelo e estreita o leque de opções futuras — na comida, no feed, no vídeo sugerido.</span></li>' +
+            '<li><span class="ico">🫧</span><span class="txt"><b>A bolha é invisível por dentro</b>: parece que você está escolhendo livremente, mas o universo de opções já foi filtrado antes de chegar até você.</span></li>' +
+            '<li><span class="ico">🧭</span><span class="txt"><b>Saia da bolha de propósito</b>: buscar ativamente o que é diferente é o único jeito de furar o funil do algoritmo.</span></li>' +
+          '</ul>' +
+        '</div>' +
+      '</div>' +
+
+      '<div class="restart-row"><button class="ghost-btn" onclick="App.restart()">↻ Testar de novo</button></div>' +
+      '<footer class="note">Experimento educacional sobre algoritmos de recomendação e filter bubbles.</footer>';
+  }
+
+  function vennSvg(axesTop3){
+    var colors = axesTop3.map(function(a){ return 'var(--tag-' + a + ')'; });
+    var labels = axesTop3.map(function(a){ return AXIS_META[a].label; });
+    var circles = [
+      { cx:128, cy:112, label:[62,30,'start'] },
+      { cx:212, cy:112, label:[278,30,'end'] },
+      { cx:170, cy:186, label:[170,284,'middle'] }
+    ];
+    var r = 82;
+    var out = '<svg viewBox="0 0 340 300" role="img" aria-label="Diagrama de Venn do perfil: ' + labels.join(', ') + '">';
+    circles.forEach(function(c, i){
+      out += '<circle cx="' + c.cx + '" cy="' + c.cy + '" r="' + r + '" fill="' + colors[i] + '" fill-opacity="0.32" stroke="' + colors[i] + '" stroke-width="2"></circle>';
+    });
+    circles.forEach(function(c, i){
+      out += '<text x="' + c.label[0] + '" y="' + c.label[1] + '" text-anchor="' + c.label[2] + '" font-size="15" font-weight="700" fill="' + colors[i] + '" font-family="Baloo 2, Inter, sans-serif">' + labels[i] + '</text>';
+    });
+    out += '</svg>';
+    return out;
+  }
+
+  function diversitySvg(history){
+    var W=300, H=158, padL=28, padR=14, padT=26, padB=22;
+    var innerW = W-padL-padR, innerH = H-padT-padB;
+    var n = history.length;
+    function x(i){ return padL + (n<=1 ? 0 : (innerW * i/(n-1))); }
+    function y(v){ return padT + innerH - (innerH * v/100); }
+    var pts = history.map(function(h,i){ return [x(i), y(h.diversityPct)]; });
+    var path = pts.map(function(p,i){ return (i===0?'M':'L') + p[0].toFixed(1) + ',' + p[1].toFixed(1); }).join(' ');
+    var grid = [0,50,100].map(function(v){
+      return '<line x1="' + padL + '" x2="' + (W-padR) + '" y1="' + y(v) + '" y2="' + y(v) + '" stroke="var(--grid)" stroke-width="1"></line>' +
+             '<text x="4" y="' + (y(v)+4) + '" font-size="9" fill="var(--text-muted)">' + v + '</text>';
+    }).join('');
+    var dots = pts.map(function(p,i){
+      return '<circle cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="5" fill="var(--series-blue)"></circle>';
+    }).join('');
+    var firstLabel = '<text x="' + pts[0][0] + '" y="' + (pts[0][1]-12) + '" text-anchor="start" font-size="11" font-weight="700" fill="var(--series-blue)" font-variant-numeric="tabular-nums">' + history[0].diversityPct + '%</text>';
+    var lastPt = pts[pts.length-1], lastH = history[history.length-1];
+    var lastLabel = '<text x="' + lastPt[0] + '" y="' + (lastPt[1]-12) + '" text-anchor="end" font-size="11" font-weight="700" fill="var(--series-blue)" font-variant-numeric="tabular-nums">' + lastH.diversityPct + '%</text>';
+    var xlabels = history.map(function(h,i){ return '<text x="' + x(i) + '" y="' + (H-4) + '" text-anchor="middle" font-size="9" fill="var(--text-muted)">R' + h.round + '</text>'; }).join('');
+    return '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Diversidade das opções cai de ' + history[0].diversityPct + '% na rodada 1 para ' + lastH.diversityPct + '% na rodada ' + lastH.round + '">' +
+      grid + '<path d="' + path + '" fill="none" stroke="var(--series-blue)" stroke-width="2" stroke-linecap="round"></path>' + dots + firstLabel + lastLabel + xlabels +
+    '</svg>' +
+    '<div class="timeline-caption"><span>Diversidade das opções</span><span>100% → ' + lastH.diversityPct + '%</span></div>';
+  }
+
+  /* ---------- hot reload / boot ---------- */
+
+  function saveSnapshot(){
+    try{ window.claude && window.claude.hot && window.claude.hot.snapshot && window.claude.hot.snapshot(state); }catch(e){}
+  }
+
+  function boot(data){
+    if (data && data.round){ state = data; renderFromState(); }
+    else { renderIntro(); }
+  }
+
+  function renderFromState(){
+    if (state.round >= TOTAL_ROUNDS && state.choices.length >= TOTAL_ROUNDS){ renderResults(); return; }
+    var last = state.history[state.history.length-1];
+    if (last){ renderQuiz(last.ids, last.diversityPct, last.round); }
+    else { renderIntro(); }
+  }
+
+  window.App = {
+    start: function(){ state = freshState(); startRound(1); saveSnapshot(); },
+    restart: function(){ state = freshState(); renderIntro(); saveSnapshot(); }
+  };
+
+  if (window.claude && window.claude.hot){
+    if (window.claude.hot.ready) window.claude.hot.ready(boot); else boot(window.claude.hot.data);
+  } else {
+    boot(null);
+  }
+})();
+</script>
