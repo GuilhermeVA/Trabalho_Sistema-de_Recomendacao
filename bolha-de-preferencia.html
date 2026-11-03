@@ -11,6 +11,7 @@
     --series-blue:#2a78d6; --grid:#e1e0d9;
     --tag-doce:#a97400; --tag-frio:#2a78d6; --tag-gourmet:#4a3aa7; --tag-indulgente:#c23c74;
     --tag-pratico:#008300; --tag-quente:#eb6834; --tag-salgado:#e34948; --tag-saudavel:#0f8f60;
+    --niche-doce:#2a78d6; --niche-salgado:#eb6834; --niche-saudavel:#1baf7a;
   }
   @media (prefers-color-scheme: dark){
     :root:not([data-theme="light"]){
@@ -22,6 +23,7 @@
       --series-blue:#3987e5; --grid:#2c2c2a;
       --tag-doce:#c98500; --tag-frio:#3987e5; --tag-gourmet:#9085e9; --tag-indulgente:#d55181;
       --tag-pratico:#008300; --tag-quente:#d95926; --tag-salgado:#e66767; --tag-saudavel:#199e70;
+      --niche-doce:#3987e5; --niche-salgado:#d95926; --niche-saudavel:#199e70;
     }
   }
   :root[data-theme="dark"]{
@@ -33,6 +35,7 @@
     --series-blue:#3987e5; --grid:#2c2c2a;
     --tag-doce:#c98500; --tag-frio:#3987e5; --tag-gourmet:#9085e9; --tag-indulgente:#d55181;
     --tag-pratico:#008300; --tag-quente:#d95926; --tag-salgado:#e66767; --tag-saudavel:#199e70;
+    --niche-doce:#3987e5; --niche-salgado:#d95926; --niche-saudavel:#199e70;
   }
 
   *{ box-sizing:border-box; }
@@ -133,6 +136,9 @@
   .tag-quente{ color:var(--tag-quente); background:color-mix(in srgb, var(--tag-quente) 16%, transparent); }
   .tag-salgado{ color:var(--tag-salgado); background:color-mix(in srgb, var(--tag-salgado) 16%, transparent); }
   .tag-saudavel{ color:var(--tag-saudavel); background:color-mix(in srgb, var(--tag-saudavel) 16%, transparent); }
+  .niche-doce{ color:var(--niche-doce); background:color-mix(in srgb, var(--niche-doce) 16%, transparent); }
+  .niche-salgado{ color:var(--niche-salgado); background:color-mix(in srgb, var(--niche-salgado) 16%, transparent); }
+  .niche-saudavel{ color:var(--niche-saudavel); background:color-mix(in srgb, var(--niche-saudavel) 16%, transparent); }
 
   /* results */
   .result-hero{ text-align:center; padding:8px 4px 4px; }
@@ -145,11 +151,11 @@
   .section .sub{ color:var(--text-muted); font-size:13px; margin:0 0 14px; }
   .panel{ background:var(--surface); border:1px solid var(--border); border-radius:18px; padding:18px; box-shadow:0 2px 10px var(--shadow); }
 
-  .venn-wrap{ display:flex; justify-content:center; }
-  .venn-wrap svg{ width:100%; max-width:360px; height:auto; }
-  .venn-legend{ display:flex; justify-content:center; gap:14px; flex-wrap:wrap; margin-top:10px; }
-  .venn-legend .item{ display:flex; align-items:center; gap:6px; font-size:12.5px; color:var(--text-secondary); font-weight:600; }
-  .venn-legend .dot{ width:10px; height:10px; border-radius:50%; flex:none; }
+  .radar-wrap{ display:flex; justify-content:center; }
+  .radar-wrap svg{ width:100%; max-width:340px; height:auto; }
+  .radar-legend{ display:flex; justify-content:center; gap:14px; flex-wrap:wrap; margin-top:4px; }
+  .radar-legend .item{ display:flex; align-items:center; gap:6px; font-size:12.5px; color:var(--text-secondary); font-weight:600; }
+  .radar-legend .dot{ width:10px; height:10px; border-radius:50%; flex:none; }
 
   .timeline-caption{ display:flex; justify-content:space-between; font-size:12px; color:var(--text-muted); margin-top:6px; }
 
@@ -158,6 +164,9 @@
   .edu-list .ico{ flex:none; width:34px; height:34px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:17px; background:var(--surface-2); }
   .edu-list .txt{ font-size:13.5px; color:var(--text-secondary); line-height:1.5; }
   .edu-list .txt b{ color:var(--text-primary); }
+  .rec-types{ display:flex; flex-direction:column; gap:8px; margin-bottom:12px; }
+  .rec-types p{ margin:0; font-size:13px; color:var(--text-secondary); line-height:1.5; }
+  .rec-types b{ color:var(--text-primary); }
   .callout{
     margin-top:14px; padding:14px 16px; border-radius:14px; font-size:13.5px; line-height:1.55;
     background:color-mix(in srgb, var(--accent) 12%, var(--surface-2)); color:var(--text-primary); border:1px solid color-mix(in srgb, var(--accent) 30%, var(--border));
@@ -198,7 +207,7 @@
   var RAW_FOODS = [
     [1,  'Açaí com Leite Ninho',            '🍧', .90,.05,.30,.85,.60,.30,.00,.90],
     [2,  'Salada Caesar',                   '🥗', .10,.40,.85,.20,.60,.50,.10,.50],
-    [3,  'Hambúrguer Artesanal',            '🍔', .10,.80,.25,.75,.40,.70,.90,.05],
+    [3,  'Hambúrguer Artesanal',            '🍔', .10,.80,.25,.75,.40,.35,.90,.05],
     [4,  'Brigadeiro Gourmet',              '🍫', .95,.15,.10,.90,.70,.60,.10,.10],
     [5,  'Petit Gâteau com Sorvete',        '🍰', .90,.05,.05,.95,.20,.85,.70,.50],
     [6,  'Milk-shake Duplo Chocolate',      '🥤', .85,.10,.10,.85,.80,.30,.00,.90],
@@ -219,16 +228,85 @@
     [21, 'Coxinha de Frango',               '🧆', .05,.80,.15,.75,.85,.15,.60,.00],
     [22, 'Risoto de Funghi Trufado',        '🍄', .05,.50,.40,.60,.20,.95,.60,.00],
     [23, 'Filé ao Poivre com Fritas',       '🥩', .05,.70,.20,.75,.30,.90,.80,.00],
-    [24, 'Sushi Combinado',                 '🍣', .15,.50,.70,.30,.40,.80,.00,.80]
+    [24, 'Sushi Combinado',                 '🍣', .15,.50,.70,.30,.40,.80,.00,.80],
+    [25, 'Iogurte Grego com Granola',       '🍓', .30,.00,.85,.15,.75,.30,.00,.50],
+    [26, 'Salada de Atum com Folhas',       '🥗', .05,.50,.85,.15,.55,.50,.05,.55],
+    [27, 'Esfiha de Carne',                 '🫓', .05,.75,.20,.65,.80,.25,.70,.00],
+    [28, 'Magret de Pato ao Molho de Laranja','🦆', .30,.55,.30,.70,.10,.95,.65,.00],
+    [29, 'Massa Trufada ao Parmesão',       '🍝', .05,.55,.25,.70,.20,.90,.65,.00],
+    [30, 'Costela Low & Slow com Vinho',    '🍷', .10,.60,.20,.75,.10,.90,.75,.00],
+    [31, 'Camarão na Manteiga de Alho',     '🍤', .05,.65,.35,.60,.25,.85,.60,.00],
+    [32, 'Cordeiro Assado com Ervas',       '🌿', .05,.55,.30,.65,.15,.90,.70,.00],
+    [33, 'Temaki de Salmão com Cream Cheese','🍙', .10,.45,.55,.50,.60,.70,.00,.60],
+    [34, 'Ceviche de Peixe Branco',         '🐟', .10,.40,.75,.20,.30,.80,.00,.75],
+    [35, 'Carpaccio de Salmão',             '🥢', .05,.35,.65,.30,.30,.85,.00,.70],
+    [36, 'Tartar de Atum com Abacate',      '🥑', .05,.40,.75,.25,.35,.80,.00,.70],
+
+    // --- Variações próximas, para aprofundar cada nicho e deixar as rodadas finais uniformes ---
+    [37, 'Churros com Doce de Leite',       '🥨', .90,.05,.05,.85,.55,.25,.75,.00],
+    [38, 'Panqueca de Nutella',             '🥞', .90,.05,.10,.85,.45,.30,.60,.00],
+    [39, 'Cheesecake de Frutas Vermelhas',  '🍰', .85,.05,.15,.80,.30,.65,.00,.55],
+    [40, 'Mousse de Chocolate',             '🍫', .85,.05,.10,.85,.40,.55,.00,.45],
+    [41, 'Waffle com Calda e Chantilly',    '🧇', .88,.05,.10,.82,.40,.40,.55,.10],
+    [42, 'Bolo de Chocolate com Brigadeiro','🎂', .90,.05,.10,.85,.50,.45,.10,.05],
+    [43, 'Pudim de Leite Condensado',       '🍮', .88,.05,.10,.78,.45,.35,.00,.35],
+    [44, 'Cookie Recheado Quentinho',       '🍪', .85,.10,.10,.80,.65,.30,.50,.00],
+
+    [45, 'Bowl de Frango com Batata Doce',  '🍗', .05,.45,.85,.20,.55,.40,.55,.00],
+    [46, 'Salada com Grão-de-bico e Ovo',   '🥚', .05,.35,.90,.15,.60,.35,.05,.40],
+    [47, 'Panqueca de Aveia Fit',           '🥞', .25,.05,.85,.15,.60,.25,.40,.00],
+    [48, 'Omelete de Claras com Aveia',     '🍳', .05,.35,.90,.10,.55,.20,.65,.00],
+    [49, 'Sopa de Legumes Leve',            '🍲', .05,.40,.90,.10,.50,.30,.80,.00],
+    [50, 'Wrap de Atum com Salada',         '🌯', .05,.45,.85,.15,.80,.35,.05,.20],
+    [51, 'Mix de Castanhas e Frutas Secas', '🥜', .30,.10,.80,.15,.90,.35,.00,.00],
+    [52, 'Suco Verde Detox',                '🥤', .15,.00,.95,.05,.85,.20,.00,.55],
+
+    [53, 'X-Salada Tradicional',            '🍔', .10,.80,.25,.80,.45,.25,.80,.00],
+    [54, 'Cachorro-quente Completo',        '🌭', .10,.85,.15,.85,.70,.10,.75,.00],
+    [55, 'Calzone de Pepperoni',            '🥟', .05,.80,.20,.80,.50,.35,.80,.00],
+    [56, 'Empadão de Frango',               '🥧', .05,.75,.25,.70,.55,.30,.75,.00],
+    [57, 'Batata Rústica com Bacon',        '🍟', .05,.90,.10,.88,.65,.20,.80,.00],
+    [58, 'Tiras de Frango Empanado',        '🍗', .05,.75,.25,.70,.85,.15,.70,.00],
+    [59, 'Pastel de Carne',                 '🥟', .05,.80,.15,.75,.80,.15,.75,.00],
+    [60, 'Misto Quente com Queijo',         '🧀', .10,.80,.20,.75,.75,.20,.80,.00],
+
+    [61, 'Polvo Grelhado com Purê',         '🐙', .05,.55,.35,.60,.15,.90,.60,.00],
+    [62, 'Risoto de Camarão ao Limão',      '🍤', .05,.55,.35,.60,.20,.90,.65,.00],
+    [63, 'Paleta de Cordeiro Braseada',     '🍖', .10,.55,.25,.75,.10,.90,.75,.00],
+    [64, 'Tomahawk na Brasa',               '🥩', .05,.65,.20,.75,.10,.90,.80,.00],
+    [65, 'Lagosta Grelhada na Manteiga',    '🦞', .05,.55,.35,.65,.10,.95,.55,.00],
+    [66, 'Confit de Pato',                  '🦆', .10,.55,.25,.70,.10,.90,.65,.00],
+
+    [67, 'Sashimi de Atum',                 '🍣', .05,.40,.75,.25,.35,.80,.00,.75],
+    [68, 'Niguiri Variado',                 '🍱', .10,.45,.65,.30,.50,.75,.00,.60],
+    [69, 'Poke Bowl de Atum com Edamame',   '🥗', .10,.45,.80,.25,.55,.70,.00,.60],
+    [70, 'Tartar de Salmão com Gergelim',   '🥑', .05,.40,.70,.30,.30,.85,.00,.65],
+    [71, 'Uramaki Especial',                '🍙', .15,.40,.60,.35,.55,.70,.00,.55],
+    [72, 'Salada de Polvo Gelada',          '🐙', .05,.45,.70,.25,.30,.80,.00,.70]
   ];
+
+  // 3 nichos consolidados (em vez de 5) — cada um ancorado por uma semente da Rodada 1,
+  // e cada um profundo o bastante para que as rodadas finais mostrem itens quase uniformes.
+  var NICHE_META = {
+    doce:     { label:'Doce & Indulgente', emoji:'🍫' },
+    saudavel: { label:'Saudável & Leve',   emoji:'🥗' },
+    salgado:  { label:'Salgado & Pesado',  emoji:'🍔' }
+  };
+  var NICHE_IDS = {
+    doce:     [1,4,5,6,7,8,9,37,38,39,40,41,42,43,44],
+    saudavel: [2,10,11,13,14,15,25,26,45,46,47,48,49,50,51,52,12,24,33,34,35,36,67,68,69,70,71,72],
+    salgado:  [3,16,17,18,19,20,21,27,53,54,55,56,57,58,59,60,22,23,28,29,30,31,32,61,62,63,64,65,66]
+  };
+  var ID_TO_NICHE = {};
+  Object.keys(NICHE_IDS).forEach(function(n){ NICHE_IDS[n].forEach(function(id){ ID_TO_NICHE[id] = n; }); });
 
   var FOODS = RAW_FOODS.map(function(r){
     var v = {}; AXES.forEach(function(a,i){ v[a] = r[3+i]; });
-    return { id:r[0], nome:r[1], emoji:r[2], v:v };
+    return { id:r[0], nome:r[1], emoji:r[2], v:v, niche:ID_TO_NICHE[r[0]] };
   });
   function foodById(id){ return FOODS.filter(function(f){ return f.id===id; })[0]; }
 
-  var ROUND1_IDS = [1,2,3];
+  var ROUND1_IDS = [1,2,3]; // um item de cada nicho: doce, saudável, salgado
 
   var NAME_MAP = {
     'doce_indulgente':      ['Bolha do Comfort Food Açucarado','🎂'],
@@ -277,12 +355,50 @@
   }
   var state = freshState();
 
+  function rankBySimilarity(list){
+    return list
+      .map(function(f){ return { f:f, sim:cosine(state.acc, f.v) }; })
+      .sort(function(a,b){ return b.sim - a.sim; })
+      .map(function(r){ return r.f; });
+  }
+
+  // Rodada 1: fixa, uma semente por nicho.
+  // Rodadas 2-3: 2 itens do nicho dominante (o da escolha mais recente) — bem
+  // parecidos — + 1 "razoavelmente parecido" vindo de outro nicho.
+  // Rodadas 4-5: só itens dos nichos que o usuário já escolheu (sem coringa) —
+  // a bolha está praticamente fechada.
+  // Nicho dominante = o mais escolhido até agora (maioria de votos); empate
+  // é resolvido pela escolha mais recente. Isso garante um fechamento nítido
+  // da bolha mesmo que a pessoa clique de forma inconsistente pelo caminho.
+  function dominantNiche(){
+    var counts = {};
+    state.choices.forEach(function(c){ counts[c.niche] = (counts[c.niche]||0) + 1; });
+    var maxCount = Math.max.apply(null, Object.keys(counts).map(function(k){ return counts[k]; }));
+    var tied = Object.keys(counts).filter(function(k){ return counts[k]===maxCount; });
+    if (tied.length === 1) return tied[0];
+    for (var i = state.choices.length-1; i>=0; i--){
+      if (tied.indexOf(state.choices[i].niche) !== -1) return state.choices[i].niche;
+    }
+    return tied[0];
+  }
+
   function pickOptions(round){
     if (round===1) return ROUND1_IDS.slice();
     var remaining = FOODS.filter(function(f){ return state.shownIds.indexOf(f.id)===-1; });
-    var ranked = remaining.map(function(f){ return { f:f, sim:cosine(state.acc, f.v) }; });
-    ranked.sort(function(a,b){ return b.sim - a.sim; });
-    return ranked.slice(0,3).map(function(r){ return r.f.id; });
+    var dominant = dominantNiche();
+
+    if (round===4 || round===5){
+      var eligible = remaining.filter(function(f){ return f.niche===dominant; });
+      var pool = eligible.length >= 3 ? eligible : remaining;
+      return rankBySimilarity(pool).slice(0,3).map(function(f){ return f.id; });
+    }
+
+    var sameRanked = rankBySimilarity(remaining.filter(function(f){ return f.niche===dominant; }));
+    var otherRanked = rankBySimilarity(remaining.filter(function(f){ return f.niche!==dominant; }));
+    var picks = sameRanked.slice(0,2).concat(otherRanked.slice(0,1));
+    var rest = sameRanked.concat(otherRanked).filter(function(f){ return picks.indexOf(f)===-1; });
+    while (picks.length<3 && rest.length){ picks.push(rest.shift()); }
+    return picks.map(function(f){ return f.id; });
   }
 
   function startRound(n){
@@ -291,7 +407,12 @@
     ids.forEach(function(id){ state.shownIds.push(id); });
     var raw = avgPairwiseDiversity(ids);
     if (n===1) state.baseline = raw || 0.0001;
-    var diversityPct = clamp(Math.round((raw/state.baseline)*100), 5, 100);
+    var diversityPct = clamp(Math.round((raw/state.baseline)*100), 0, 100);
+    // Trava: a diversidade nunca pode subir em relação à rodada anterior — garante
+    // um funil visualmente limpo, condizente com a barra do topo (mesma métrica).
+    if (state.history.length){
+      diversityPct = Math.min(diversityPct, state.history[state.history.length-1].diversityPct);
+    }
     state.history.push({ round:n, ids:ids, diversityPct:diversityPct });
     renderQuiz(ids, diversityPct, n);
   }
@@ -334,11 +455,12 @@
     return 'Bolha quase fechada: as opções agora são variações do mesmo nicho.';
   }
 
-  function tagsHtml(food){
-    var ranked = AXES.slice().sort(function(a,b){ return food.v[b]-food.v[a]; }).slice(0,2);
-    return ranked.map(function(a){
-      return '<span class="tag ' + AXIS_META[a].cls + '">' + AXIS_META[a].emoji + ' ' + AXIS_META[a].label + '</span>';
-    }).join('');
+  // Durante o quiz a tag do card mostra o NICHO (cor fixa), não os atributos do
+  // item — é o que faz 2 cards do mesmo nicho parecerem visualmente "iguais" e
+  // comunica o fechamento da bolha nas rodadas finais.
+  function nicheTagHtml(food){
+    var m = NICHE_META[food.niche];
+    return '<span class="tag niche-' + food.niche + '">' + m.emoji + ' ' + m.label + '</span>';
   }
 
   function renderIntro(){
@@ -350,7 +472,7 @@
         '<p>Escolha entre comidas por 5 rodadas. A cada clique, o algoritmo aprende sobre você e as opções ficam cada vez mais parecidas — exatamente como no feed do seu app favorito.</p>' +
         '<button class="cta" onclick="App.start()">Começar o teste →</button>' +
         '<div class="intro-axes">' +
-          AXES.map(function(a){ return '<span class="tag ' + AXIS_META[a].cls + '">' + AXIS_META[a].emoji + ' ' + AXIS_META[a].label + '</span>'; }).join('') +
+          Object.keys(NICHE_META).map(function(n){ return '<span class="tag niche-' + n + '">' + NICHE_META[n].emoji + ' ' + NICHE_META[n].label + '</span>'; }).join('') +
         '</div>' +
       '</div>';
   }
@@ -378,7 +500,7 @@
       var card = el(
         '<button class="card" style="animation-delay:' + (idx*70) + 'ms" data-id="' + id + '">' +
           '<div class="emoji">' + food.emoji + '</div>' +
-          '<div class="info"><h3>' + food.nome + '</h3><div class="tags">' + tagsHtml(food) + '</div></div>' +
+          '<div class="info"><h3>' + food.nome + '</h3><div class="tags">' + nicheTagHtml(food) + '</div></div>' +
         '</button>'
       );
       card.addEventListener('click', function(){ onPick(this, id); });
@@ -410,13 +532,11 @@
       '</div>' +
 
       '<div class="section">' +
-        '<h2>Seu perfil em 3 eixos</h2>' +
-        '<p class="sub">Interseção dos atributos que mais definiram suas escolhas</p>' +
+        '<h2>Seu mapa de preferências</h2>' +
+        '<p class="sub">As 8 dimensões que o algoritmo usou — quanto mais a área se estica num eixo, mais ele pesou nas suas escolhas</p>' +
         '<div class="panel">' +
-          '<div class="venn-wrap">' + vennSvg(t3) + '</div>' +
-          '<div class="venn-legend">' + t3.map(function(a){
-            return '<span class="item"><span class="dot" style="background:var(--tag-' + a + ')"></span>' + AXIS_META[a].emoji + ' ' + AXIS_META[a].label + '</span>';
-          }).join('') + '</div>' +
+          '<div class="radar-wrap">' + radarSvg() + '</div>' +
+          '<div class="radar-legend"><span class="item">🫧 Seus 3 traços mais fortes: ' + t3.map(function(a){ return AXIS_META[a].emoji + ' ' + AXIS_META[a].label; }).join(' · ') + '</span></div>' +
           '<div class="profile-bars">' + AXES.slice().sort(function(a,b){return state.acc[b]-state.acc[a];}).map(function(a){
             var pct = axisPct(a);
             return '<div class="profile-row"><span class="lbl">' + AXIS_META[a].emoji + ' ' + AXIS_META[a].label + '</span>' +
@@ -427,8 +547,8 @@
       '</div>' +
 
       '<div class="section">' +
-        '<h2>Como a sua bolha foi criada?</h2>' +
-        '<p class="sub">Diversidade das opções mostradas em cada rodada</p>' +
+        '<h2>Como a sua bolha foi se fechando</h2>' +
+        '<p class="sub">Cada ponto mede o quanto as 3 opções exibidas naquela rodada se pareciam entre si. Rodada 1: três nichos bem diferentes. Rodada 5: praticamente um só nicho — o seu. A queda é o algoritmo fechando o cerco, clique a clique.</p>' +
         '<div class="panel">' +
           diversitySvg(history) +
           '<div class="callout">📊 <b>Assim como no Instagram, TikTok, YouTube ou iFood</b>, cada clique ensina o algoritmo um pouco mais sobre você — e ele retribui mostrando cada vez menos diversidade e cada vez mais do mesmo nicho. Isso é ótimo para engajamento, mas é assim que nascem as <b>câmaras de eco</b>.</p>' +
@@ -447,28 +567,64 @@
         '</div>' +
       '</div>' +
 
+      '<div class="section">' +
+        '<h2>Isso também é negócio</h2>' +
+        '<div class="panel">' +
+          '<div class="rec-types">' +
+            '<p><b>📊 Por conteúdo</b> — olha as características de cada produto e sugere os parecidos. Foi o que você viveu aqui.</p>' +
+            '<p><b>👥 Colaborativo</b> — olha o que outras pessoas parecidas com você compraram ou gostaram.</p>' +
+            '<p><b>🔀 Híbrido</b> — usa os dois juntos; é o que Amazon, Netflix e iFood fazem de verdade.</p>' +
+          '</div>' +
+          '<div class="callout">💡 Isso também serve para negócios pequenos: até um jeito simples de sugerir o produto certo para o cliente certo já faz ele voltar mais vezes e levar mais coisas — sem precisar de uma equipe de tecnologia.</div>' +
+        '</div>' +
+      '</div>' +
+
       '<div class="restart-row"><button class="ghost-btn" onclick="App.restart()">↻ Testar de novo</button></div>' +
       '<footer class="note">Experimento educacional sobre algoritmos de recomendação e filter bubbles.</footer>';
   }
 
-  function vennSvg(axesTop3){
-    var colors = axesTop3.map(function(a){ return 'var(--tag-' + a + ')'; });
-    var labels = axesTop3.map(function(a){ return AXIS_META[a].label; });
-    var circles = [
-      { cx:128, cy:112, label:[62,30,'start'] },
-      { cx:212, cy:112, label:[278,30,'end'] },
-      { cx:170, cy:186, label:[170,284,'middle'] }
-    ];
-    var r = 82;
-    var out = '<svg viewBox="0 0 340 300" role="img" aria-label="Diagrama de Venn do perfil: ' + labels.join(', ') + '">';
-    circles.forEach(function(c, i){
-      out += '<circle cx="' + c.cx + '" cy="' + c.cy + '" r="' + r + '" fill="' + colors[i] + '" fill-opacity="0.32" stroke="' + colors[i] + '" stroke-width="2"></circle>';
+  function radarSvg(){
+    var cx=180, cy=160, R=86, labelR=108;
+    var n = AXES.length;
+    function angleFor(i){ return (-90 + (360/n)*i) * Math.PI/180; }
+    function ptAt(i, r){ var a=angleFor(i); return [cx + r*Math.cos(a), cy + r*Math.sin(a)]; }
+
+    var rings = [0.25,0.5,0.75,1].map(function(frac){
+      var pts = AXES.map(function(_,i){ var p=ptAt(i, R*frac); return p[0].toFixed(1)+','+p[1].toFixed(1); }).join(' ');
+      return '<polygon points="' + pts + '" fill="none" stroke="var(--grid)" stroke-width="1"></polygon>';
+    }).join('');
+
+    var spokes = AXES.map(function(_,i){
+      var p = ptAt(i, R);
+      return '<line x1="' + cx + '" y1="' + cy + '" x2="' + p[0].toFixed(1) + '" y2="' + p[1].toFixed(1) + '" stroke="var(--grid)" stroke-width="1"></line>';
+    }).join('');
+
+    var dataPts = AXES.map(function(a,i){
+      var pct = axisPct(a);
+      var p = ptAt(i, R*pct/100);
+      return { x:p[0], y:p[1], pct:pct, axis:a };
     });
-    circles.forEach(function(c, i){
-      out += '<text x="' + c.label[0] + '" y="' + c.label[1] + '" text-anchor="' + c.label[2] + '" font-size="15" font-weight="700" fill="' + colors[i] + '" font-family="Baloo 2, Inter, sans-serif">' + labels[i] + '</text>';
-    });
-    out += '</svg>';
-    return out;
+    var polyStr = dataPts.map(function(p){ return p.x.toFixed(1)+','+p.y.toFixed(1); }).join(' ');
+    var topAxis = dataPts.slice().sort(function(a,b){ return b.pct-a.pct; })[0];
+
+    var dots = dataPts.map(function(p){
+      return '<circle cx="' + p.x.toFixed(1) + '" cy="' + p.y.toFixed(1) + '" r="4" fill="var(--tag-' + p.axis + ')"></circle>';
+    }).join('');
+
+    var labels = AXES.map(function(a,i){
+      var p = ptAt(i, labelR);
+      var cosA = Math.cos(angleFor(i));
+      var anchor = cosA > 0.3 ? 'start' : (cosA < -0.3 ? 'end' : 'middle');
+      return '<text x="' + p[0].toFixed(1) + '" y="' + p[1].toFixed(1) + '" text-anchor="' + anchor + '" dominant-baseline="middle" font-size="11.5" font-weight="700" fill="var(--tag-' + a + ')" font-family="Inter, sans-serif">' + AXIS_META[a].emoji + ' ' + AXIS_META[a].label + '</text>';
+    }).join('');
+
+    var highlight = '<text x="' + topAxis.x.toFixed(1) + '" y="' + (topAxis.y-12).toFixed(1) + '" text-anchor="middle" font-size="12" font-weight="700" fill="var(--accent)" font-family="Inter, sans-serif">' + topAxis.pct + '%</text>';
+
+    return '<svg viewBox="-24 0 400 320" role="img" aria-label="Mapa de preferências nos 8 eixos; eixo mais forte: ' + AXIS_META[topAxis.axis].label + ' em ' + topAxis.pct + '%">' +
+      rings + spokes +
+      '<polygon points="' + polyStr + '" fill="var(--accent)" fill-opacity="0.28" stroke="var(--accent)" stroke-width="2"></polygon>' +
+      dots + highlight + labels +
+    '</svg>';
   }
 
   function diversitySvg(history){
